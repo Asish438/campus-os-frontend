@@ -1,14 +1,14 @@
-import React, { useEffect } from 'react';
-import { FiX } from 'react-icons/fi';
+import React, { ReactNode, useEffect } from 'react';
+import { X } from 'lucide-react';
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
   subtitle?: string;
-  children: React.ReactNode;
-  maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl';
-  icon?: React.ComponentType<{ className?: string }>;
+  children: ReactNode;
+  footer?: ReactNode;
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -17,74 +17,75 @@ export const Modal: React.FC<ModalProps> = ({
   title,
   subtitle,
   children,
-  maxWidth = '2xl',
-  icon: Icon,
+  footer,
+  size = 'md'
 }) => {
+  // ESC key to close
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
     };
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-      window.addEventListener('keydown', handleKeyDown);
-    }
-    return () => {
-      document.body.style.overflow = 'unset';
-      window.removeEventListener('keydown', handleKeyDown);
-    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
-  const maxWidthClass = {
-    sm: 'max-w-sm',
-    md: 'max-w-md',
-    lg: 'max-w-lg',
-    xl: 'max-w-xl',
-    '2xl': 'max-w-2xl',
-    '3xl': 'max-w-3xl',
-    '4xl': 'max-w-4xl',
-    '5xl': 'max-w-5xl',
-  }[maxWidth];
+  const sizeClasses = {
+    sm: 'max-w-md',
+    md: 'max-w-lg',
+    lg: 'max-w-2xl',
+    xl: 'max-w-4xl',
+    full: 'max-w-5xl'
+  };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+    <div className="fixed inset-0 z-50 overflow-y-auto">
       {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-navy-950/85 backdrop-blur-md transition-opacity duration-200"
+      <div 
+        className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
         onClick={onClose}
       />
 
-      {/* Modal Card */}
-      <div
-        className={`relative w-full ${maxWidthClass} bg-navy-900 border border-navy-700/90 rounded-2xl shadow-2xl overflow-hidden z-10 my-auto flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-150`}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="px-6 py-5 border-b border-navy-750 flex items-center justify-between bg-navy-850/80 sticky top-0 z-10">
-          <div className="flex items-center gap-3">
-            {Icon && (
-              <div className="p-2 rounded-lg bg-brand-600/10 text-brand-400 border border-brand-500/20">
-                <Icon className="w-5 h-5" />
-              </div>
-            )}
+      {/* Modal Box */}
+      <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+        <div
+          className={`relative transform overflow-hidden rounded-2xl bg-white dark:bg-slate-800 text-left shadow-2xl transition-all w-full ${sizeClasses[size]} border border-slate-200/80 dark:border-slate-700/80 my-8`}
+          onClick={e => e.stopPropagation()}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700/80 px-6 py-4">
             <div>
-              <h3 className="text-lg font-semibold text-slate-100 tracking-tight">{title}</h3>
-              {subtitle && <p className="text-xs text-slate-400 mt-0.5">{subtitle}</p>}
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                {title}
+              </h3>
+              {subtitle && (
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  {subtitle}
+                </p>
+              )}
             </div>
+            <button
+              onClick={onClose}
+              className="rounded-lg p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 text-slate-400 hover:text-slate-100 hover:bg-navy-750 rounded-lg transition-colors"
-            title="Close"
-          >
-            <FiX className="w-5 h-5" />
-          </button>
-        </div>
 
-        {/* Content with isolated scroll */}
-        <div className="p-6 overflow-y-auto flex-1">
-          {children}
+          {/* Content */}
+          <div className="p-6 max-h-[75vh] overflow-y-auto">
+            {children}
+          </div>
+
+          {/* Footer */}
+          {footer && (
+            <div className="border-t border-slate-100 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-800/50 px-6 py-3 flex items-center justify-end gap-3">
+              {footer}
+            </div>
+          )}
         </div>
       </div>
     </div>

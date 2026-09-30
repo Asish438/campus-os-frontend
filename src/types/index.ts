@@ -1,245 +1,228 @@
-export type UserRole = 'super_admin' | 'admin';
+export type UserRole = 
+  | 'Super Admin' 
+  | 'Admin' 
+  | 'Manager' 
+  | 'Accountant' 
+  | 'Cashier' 
+  | 'Loan Officer' 
+  | 'KYC Officer';
 
-export interface AdminPermission {
-  canManageLeads: boolean;
-  canViewAssignedCampaignsOnly: boolean;
-  canExportData: boolean;
-  canCreateInvoices: boolean;
-  canEditSettings: boolean;
-}
+export type KYCStatus = 'Approved' | 'Pending' | 'Under Review' | 'Rejected';
+export type AccountStatus = 'Active' | 'Inactive' | 'Frozen' | 'Closed';
+export type LoanStatus = 'Pending' | 'Under Review' | 'Approved' | 'Rejected' | 'Active' | 'Completed' | 'Overdue';
+export type PaymentMode = 'Cash' | 'UPI' | 'Bank Transfer';
 
-export interface User {
-  id: string;
+export interface MemberDocument {
+  type: string;
   name: string;
-  email: string;
-  role: UserRole;
-  avatar: string;
-  title: string;
-  status: 'active' | 'inactive';
-  assignedCampaignIds: string[];
-  assignedLeadCount?: number;
-  phone?: string;
-  location?: string;
-  lastActive: string;
-  createdAt: string;
-  permissions: AdminPermission;
+  status: KYCStatus;
+  fileUrl: string;
+  uploadedDate: string;
+  documentNumber?: string;
+  rejectionReason?: string;
 }
 
-export type AdPlatform = 'facebook' | 'instagram' | 'both';
-
-export type AdObjective = 
-  | 'LEAD_GENERATION'
-  | 'TRAFFIC'
-  | 'CONVERSIONS'
-  | 'STORIES_REELS';
-
-export type CampaignStatus = 'ACTIVE' | 'PAUSED' | 'COMPLETED' | 'DRAFT';
-
-export type CreativeFormat = 'FEED_POST' | 'REELS_VIDEO' | 'STORY_CARD' | 'CAROUSEL';
-
-export interface AdCreative {
-  headline: string;
-  primaryText: string;
-  callToAction: 'LEARN_MORE' | 'SIGN_UP' | 'APPLY_NOW' | 'GET_QUOTE' | 'CONTACT_US' | 'BOOK_NOW';
-  mediaUrl: string;
-  mediaType: 'image' | 'video';
-  format: CreativeFormat;
-  targetUrl?: string;
-  formName?: string;
-}
-
-export interface MetaCampaign {
-  id: string;
-  name: string;
-  code: string;
-  platform: AdPlatform;
-  objective: AdObjective;
-  status: CampaignStatus;
-  dailyBudget: number;
-  totalBudget: number;
-  spend: number;
-  reach: number;
-  impressions: number;
-  clicks: number;
-  ctr: number; // Click-through rate %
-  leadsCount: number;
-  cpl: number; // Cost per lead
-  roas: number; // Return on ad spend
-  assignedAdminId: string; // assigned Admin user ID
-  creative: AdCreative;
-  targetAudience: {
-    ageRange: string;
-    locations: string[];
-    interests: string[];
-  };
-  startDate: string;
-  endDate?: string;
-  createdAt: string;
-  pixelId?: string;
-}
-
-export type LeadStatus = 'new' | 'contacted' | 'qualified' | 'closed' | 'lost';
-
-export type LeadSource = 
-  | 'Instagram Lead Form'
-  | 'Facebook Ads'
-  | 'Instagram Reels Promo'
-  | 'Direct Ad Click'
-  | 'Referral';
-
-export interface LeadInteraction {
-  id: string;
-  date: string;
-  type: 'call' | 'email' | 'meeting' | 'note' | 'status_change';
-  note: string;
-  performedBy: string;
-}
-
-export interface Lead {
-  id: string;
+export interface Member {
+  id: string; // M1001
+  firstName: string;
+  middleName?: string;
+  lastName: string;
   fullName: string;
+  dob: string;
+  gender: 'Male' | 'Female' | 'Other';
+  mobile: string;
   email: string;
-  phone: string;
-  company: string;
-  jobTitle?: string;
-  source: LeadSource;
-  campaignId: string;
-  campaignName: string;
-  assignedAdminId: string;
-  status: LeadStatus;
-  estimatedValue: number;
-  score: number; // 0-100
-  notes: string;
-  formAnswers?: { question: string; answer: string }[];
-  dateCaptured: string;
-  lastContactedDate?: string;
-  pipelineCategory: 'active' | 'non_active';
-  followUpRequired: boolean;
-  nextFollowUpAction?: string;
-  nextFollowUpDate?: string;
-  interactions: LeadInteraction[];
+  address: string;
+  city: string;
+  state: string;
+  pinCode: string;
+  occupation: string;
+  nomineeName: string;
+  nomineeRelation: string;
+  branch: string;
+  kycStatus: KYCStatus;
+  accountStatus: 'Active' | 'Inactive';
+  joiningDate: string;
+  avatar: string;
+  documents: MemberDocument[];
 }
 
-export type AnnouncementPriority = 'urgent' | 'update' | 'system' | 'strategy';
-
-export interface Announcement {
-  id: string;
-  title: string;
-  content: string;
-  priority: AnnouncementPriority;
-  authorId: string;
-  authorName: string;
-  authorAvatar: string;
-  targetAudience: 'all' | 'specific';
-  targetAdminId?: string;
-  isPinned: boolean;
-  createdAt: string;
-  tags: string[];
-  acknowledgedUserIds: string[]; // List of user IDs who acknowledged this
+export interface KYCRecord {
+  id: string; // KYC-201
+  memberId: string;
+  memberName: string;
+  memberMobile: string;
+  documentType: string;
+  documentNumber: string;
+  submittedDate: string;
+  status: KYCStatus;
+  reviewedBy: string;
+  rejectionReason?: string;
 }
 
-export type InvoiceStatus = 'paid' | 'pending' | 'overdue' | 'draft';
-
-export interface InvoiceItem {
-  id: string;
-  description: string;
-  campaignId?: string;
-  quantity: number;
-  unitPrice: number;
-  amount: number;
+export interface SavingsAccount {
+  accountNumber: string; // SB10029381
+  memberId: string;
+  memberName: string;
+  openingDate: string;
+  balance: number;
+  status: 'Active' | 'Frozen' | 'Closed';
+  interestRate: number; // e.g., 4.0
 }
 
-export interface Invoice {
-  id: string;
-  invoiceNumber: string;
-  clientName: string;
-  clientEmail: string;
-  clientCompany: string;
-  clientAddress: string;
-  campaignId?: string;
-  campaignName?: string;
-  assignedAdminId: string;
-  amount: number;
-  taxAmount: number;
-  totalAmount: number;
-  status: InvoiceStatus;
-  issueDate: string;
+export interface RDInstallment {
+  installmentNo: number;
   dueDate: string;
+  amount: number;
   paidDate?: string;
-  paymentMethod?: string;
-  items: InvoiceItem[];
-  notes?: string;
+  status: 'Paid' | 'Pending' | 'Overdue';
 }
 
-export interface CustomerProfile {
-  id: string;
-  fullName: string;
+export interface RDAccount {
+  rdNumber: string; // RD500124
+  memberId: string;
+  memberName: string;
+  installmentAmount: number;
+  frequency: 'Monthly' | 'Quarterly';
+  interestRate: number; // 7.0
+  tenureMonths: number;
+  startDate: string;
+  maturityDate: string;
+  maturityAmount: number;
+  paidInstallments: number;
+  totalInstallments: number;
+  status: 'Active' | 'Pending' | 'Matured' | 'Closed';
+  schedule: RDInstallment[];
+}
+
+export interface FDAccount {
+  fdNumber: string; // FD800392
+  memberId: string;
+  memberName: string;
+  principalAmount: number;
+  interestRate: number; // 7.5
+  tenureMonths: number;
+  startDate: string;
+  maturityDate: string;
+  maturityAmount: number;
+  status: 'Active' | 'Maturing Soon' | 'Matured' | 'Closed';
+}
+
+export interface LoanEMISchedule {
+  emiNo: number;
+  dueDate: string;
+  principal: number;
+  interest: number;
+  emiAmount: number;
+  paidAmount: number;
+  status: 'Paid' | 'Pending' | 'Partial' | 'Overdue';
+}
+
+export interface Loan {
+  loanId: string; // LN10025
+  memberId: string;
+  memberName: string;
+  loanType: 'Personal Loan' | 'Home Loan' | 'Vehicle Loan' | 'Agriculture Loan' | 'Business Loan' | 'Gold Loan';
+  requestedAmount: number;
+  approvedAmount: number;
+  interestRate: number; // e.g. 10.5
+  tenureMonths: number;
+  emi: number;
+  outstandingAmount: number;
+  disbursementDate: string;
+  status: LoanStatus;
+  schedule: LoanEMISchedule[];
+}
+
+export interface Transaction {
+  id: string; // TXN98412
+  memberId: string;
+  memberName: string;
+  accountNumber?: string;
+  type: 'Deposit' | 'Withdrawal' | 'RD Installment' | 'Loan EMI' | 'FD Deposit' | 'Interest' | 'Transfer';
+  amount: number;
+  previousBalance?: number;
+  newBalance?: number;
+  paymentMode: PaymentMode;
+  date: string;
+  referenceNumber?: string;
+}
+
+export interface Collection {
+  id: string; // COL5012
+  memberId: string;
+  memberName: string;
+  collectionType: 'Savings Deposit' | 'RD Installment' | 'Loan EMI' | 'FD Deposit' | 'Other';
+  amount: number;
+  paymentMode: PaymentMode;
+  collectedBy: string;
+  date: string;
+  status: 'Completed' | 'Pending' | 'Cancelled';
+  receiptNo: string;
+}
+
+export interface AccountingEntry {
+  id: string; // ACC-401
+  date: string;
+  description: string;
+  category: string;
+  type: 'Income' | 'Expense';
+  debit: number;
+  credit: number;
+  balance: number;
+  paymentMode: PaymentMode;
+}
+
+export interface StaffUser {
+  id: string; // STF-101
+  name: string;
   email: string;
-  phone: string;
-  company: string;
-  industry: string;
-  avatar: string;
-  status: 'active' | 'churned' | 'lead' | 'vip';
-  ltv: number;
-  firstTouchCampaignId: string;
-  firstTouchCampaignName: string;
-  convertingCampaignId: string;
-  convertingCampaignName: string;
-  convertingAdFormat: CreativeFormat;
-  assignedAdminId: string;
-  createdAt: string;
-  dealsCount: number;
-  pipelineCategory: 'active' | 'non_active';
-  followUpRequired: boolean;
-  nextFollowUpAction?: string;
-  nextFollowUpDate?: string;
-  invoices: Invoice[];
-  touchpoints: {
-    date: string;
-    channel: string;
-    description: string;
-    icon?: string;
-  }[];
-  notes: string;
+  mobile: string;
+  role: UserRole;
+  status: 'Active' | 'Inactive';
+  lastLogin: string;
+  branch: string;
 }
 
-export interface SystemSettings {
-  adAccountId: string;
-  adAccountName: string;
-  businessManagerId: string;
-  graphApiVersion: string;
-  apiTokenStatus: 'connected' | 'expired' | 'rate_limited';
-  metaPixelId: string;
-  leadWebhookUrl: string;
-  autoSyncIntervalMinutes: number;
-  currency: string;
-  timezone: string;
-  dailyNotificationDigest: boolean;
-  leadAlertWebhook: string;
+export interface PermissionMatrixItem {
+  module: string;
+  view: boolean;
+  create: boolean;
+  edit: boolean;
+  delete: boolean;
+  approve: boolean;
+  export: boolean;
 }
 
-export type NavigationTab = 
-  | 'dashboard'
-  | 'broadcast'
-  | 'invoices'
-  | 'leads'
-  | 'customer360'
-  | 'leadPipeline'
-  | 'team'
-  | 'settings';
-
-export type LeadsSubTab = 'all' | 'new' | 'old';
-export type Customer360Tab = 'pipeline' | 'dossier' | 'journey';
-export type PipelineFollowFilter = 'all' | 'follows' | 'not_follows';
-export type ThemeMode = 'dark' | 'light';
+export interface AuditLog {
+  id: string; // LOG-8001
+  user: string;
+  action: string;
+  module: string;
+  description: string;
+  ipAddress: string;
+  dateTime: string;
+  status: 'Success' | 'Failed' | 'Warning';
+}
 
 export interface AppNotification {
   id: string;
   title: string;
-  message: string;
-  timestamp: string;
+  description: string;
+  time: string;
+  type: 'kyc' | 'loan' | 'fd' | 'member' | 'system';
   read: boolean;
-  type: 'lead' | 'invoice' | 'broadcast' | 'campaign' | 'system';
-  targetTab?: NavigationTab;
-  badgeText?: string;
+  link?: string;
+}
+
+export interface InstitutionSettings {
+  name: string;
+  subtitle: string;
+  registrationNumber: string;
+  address: string;
+  phone: string;
+  email: string;
+  website: string;
+  branch: string;
+  currency: string;
 }
