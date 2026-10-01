@@ -3,9 +3,27 @@ import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
 import ToastContainer from '../notifications/Toast';
+import { useAuth } from '../../context/AuthContext';
+import { useCampus } from '../../context/CampusContext';
+import { useWebSocket } from '../../hooks/useWebSocket';
 
 export const AppShell = () => {
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const { user } = useAuth();
+  const { addToast } = useCampus();
+
+  // Listen for real-time notifications via WebSocket
+  useWebSocket(user?.id ? `/topic/notifications/${user.id}` : null, (message) => {
+      // It expects a message body from WebSocket which is the Notification entity
+      const title = message.title || 'New Notification';
+      const detail = message.message || 'You have a new update.';
+      
+      let type = 'info';
+      if (message.type === 'ALERT') type = 'error';
+      if (message.type === 'UPDATE') type = 'warning';
+      
+      addToast(title, detail, type);
+  });
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#f4f7fc] dark:bg-[#070b14] font-sans relative selection:bg-blue-600 selection:text-white">

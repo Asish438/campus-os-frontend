@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useCampus } from '../../context/CampusContext';
@@ -12,6 +13,7 @@ import {
   Bus,
   Bell,
   Sparkles,
+  Camera,
   QrCode,
   ArrowRight,
   Clock,
@@ -104,7 +106,8 @@ export const StudentDashboard = () => {
   // Quick Action Navigator Items
   const quickNav = [
     { label: 'Attendance Test', icon: CalendarCheck2, path: '/student/attendance', color: 'text-amber-600 bg-amber-500/10 dark:bg-amber-400/10' },
-    { label: 'AI Study Buddy', icon: Sparkles, path: '/student/ai-study', color: 'text-blue-600 bg-blue-500/10 dark:bg-blue-400/10', glow: true },
+    { label: 'AI Study Buddy', icon: Sparkles,
+  Camera, path: '/student/ai-study', color: 'text-blue-600 bg-blue-500/10 dark:bg-blue-400/10', glow: true },
     { label: 'Digital Gate Pass', icon: QrCode, path: '/student/gate-pass', color: 'text-purple-600 bg-purple-500/10 dark:bg-purple-400/10' },
     { label: 'Hostel & Mess', icon: UtensilsCrossed, path: '/student/hostel', color: 'text-emerald-600 bg-emerald-500/10 dark:bg-emerald-400/10' },
     { label: 'Clear Fees', icon: CreditCard, path: '/student/fees', color: 'text-rose-600 bg-rose-500/10 dark:bg-rose-400/10' },
@@ -132,7 +135,11 @@ export const StudentDashboard = () => {
   const simulatedConsecutiveNeeded = 11;
 
   return (
-    <div className="space-y-6 pb-12 selection:bg-blue-600 selection:text-white">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="space-y-6 pb-12 selection:bg-blue-600 selection:text-white">
 
       {/* 1. Tactile Paperplate Glass Student Hero Card */}
       <div className="paper-plate p-6 sm:p-8 relative overflow-hidden bg-gradient-to-br from-white/95 via-blue-50/50 to-white/90 dark:from-slate-900/90 dark:via-blue-950/30 dark:to-slate-900/90">
@@ -143,11 +150,15 @@ export const StudentDashboard = () => {
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="flex items-start sm:items-center gap-4 sm:gap-5">
             {/* Student Avatar with Verified Aura */}
-            <div className="relative shrink-0">
+            <div 
+              className="relative shrink-0 cursor-pointer group"
+              onClick={() => setShowPhotoModal(true)}
+              title="Click to take photo with camera or upload"
+            >
               <img
-                src={user?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200'}
+                src={user?.avatar || 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=250'}
                 alt={user?.name || 'Sai'}
-                className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl object-cover ring-4 ring-white/90 dark:ring-slate-800 shadow-md"
+                className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl object-cover ring-4 ring-white/90 dark:ring-slate-800 shadow-md transition-transform group-hover:scale-105"
               />
               <span
                 title="Active Enrolled Scholar"
@@ -155,6 +166,9 @@ export const StudentDashboard = () => {
               >
                 ✓
               </span>
+              <div className="absolute inset-0 rounded-3xl bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                <Camera className="w-5 h-5" />
+              </div>
             </div>
 
             {/* Personalized Contextual Welcome */}
@@ -719,7 +733,7 @@ export const StudentDashboard = () => {
           </button>
         </div>
       </Modal>
-    </div>
+    </motion.div>
   );
 };
 

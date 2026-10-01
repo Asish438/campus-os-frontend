@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { useCampus } from '../../context/CampusContext';
 import KpiCard from '../../components/common/KpiCard';
 import ChartCard from '../../components/charts/ChartCard';
@@ -88,7 +89,11 @@ export const AdminDashboard = () => {
   ];
 
   return (
-    <div className="space-y-6">
+    <motion.div 
+      initial={{ opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.4 }}
+      className="space-y-6">
       {/* Executive Command Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden">
         <div className="absolute right-0 top-0 w-80 h-80 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
@@ -376,7 +381,7 @@ export const AdminDashboard = () => {
           </ResponsiveContainer>
         </ChartCard>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

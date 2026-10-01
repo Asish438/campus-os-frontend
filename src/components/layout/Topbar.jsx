@@ -8,6 +8,7 @@ import {
   Sun,
   Moon,
   Bell,
+  Camera,
   Search,
   ChevronDown,
   Sparkles,
@@ -156,8 +157,8 @@ export const Topbar = ({ onToggleMobileDrawer }) => {
 
         {/* Profile Pill */}
         <div className="flex items-center gap-2 pl-2 border-l border-slate-200 dark:border-slate-800">
-          <img
-            src={user?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150'}
+                    <img
+            src={user?.avatar || 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=150'}
             alt={user?.name || 'User'}
             className="w-8 h-8 rounded-full object-cover ring-2 ring-indigo-500/20"
           />

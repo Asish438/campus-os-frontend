@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
@@ -6,6 +7,7 @@ import {
   GraduationCap,
   CalendarCheck2,
   Sparkles,
+  Camera,
   BookOpen,
   Building2,
   AlertTriangle,
@@ -41,7 +43,8 @@ export const Sidebar = ({ isMobile = false, onCloseMobile }) => {
             { to: '/student/dashboard', label: 'Dashboard', icon: LayoutDashboard },
             { to: '/student/academics', label: 'Academics', icon: GraduationCap },
             { to: '/student/attendance', label: 'Attendance', icon: CalendarCheck2, badge: '68%' },
-            { to: '/student/ai-study', label: 'AI Study Assistant', icon: Sparkles, highlight: true },
+            { to: '/student/ai-study', label: 'AI Study Assistant', icon: Sparkles,
+  Camera, highlight: true },
             { to: '/student/assignments', label: 'Assignments', icon: BookOpen, badge: '3' },
           ]},
           { group: 'Campus Life', items: [
@@ -65,7 +68,8 @@ export const Sidebar = ({ isMobile = false, onCloseMobile }) => {
             { to: '/faculty/dashboard', label: 'Faculty Dashboard', icon: LayoutDashboard },
             { to: '/faculty/courses', label: 'Assigned Courses', icon: BookOpen },
             { to: '/faculty/attendance', label: 'Class Attendance', icon: CalendarCheck2 },
-            { to: '/faculty/modules', label: 'AI Module Upload', icon: Sparkles, highlight: true },
+            { to: '/faculty/modules', label: 'AI Module Upload', icon: Sparkles,
+  Camera, highlight: true },
             { to: '/faculty/assignments', label: 'Assignments', icon: FileSpreadsheet },
             { to: '/faculty/students', label: 'Students Roster', icon: Users },
             { to: '/faculty/announcements', label: 'Announcements', icon: Bell },
@@ -140,7 +144,8 @@ export const Sidebar = ({ isMobile = false, onCloseMobile }) => {
   const navGroups = getNavLinks();
 
   return (
-    <aside
+    <motion.aside
+      initial={{ x: -50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.3 }}
       className={`flex flex-col h-full bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-r border-slate-200/90 dark:border-slate-800 select-none ${
         isMobile ? 'w-full' : 'w-64 shrink-0'
       }`}
@@ -225,8 +230,8 @@ export const Sidebar = ({ isMobile = false, onCloseMobile }) => {
       <div className="p-3 border-t border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900">
         <div className="flex items-center justify-between p-2 rounded-xl bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 shadow-xs">
           <div className="flex items-center gap-2.5 min-w-0">
-            <img
-              src={user?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150'}
+                        <img
+              src={user?.avatar || 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=150'}
               alt={user?.name || 'User'}
               className="w-8 h-8 rounded-lg object-cover border border-slate-200 dark:border-slate-700 shrink-0"
             />
@@ -248,7 +253,7 @@ export const Sidebar = ({ isMobile = false, onCloseMobile }) => {
           </button>
         </div>
       </div>
-    </aside>
+    </motion.aside>
   );
 };
 

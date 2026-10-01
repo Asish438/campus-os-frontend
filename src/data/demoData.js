@@ -8,7 +8,7 @@ export const DEMO_USERS = {
     email: 'student@campusos.com',
     password: 'student123',
     role: 'STUDENT',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250',
+    avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=250',
     studentId: 'BPUT2026001',
     program: 'B.Tech',
     department: 'Computer Science & Engineering',

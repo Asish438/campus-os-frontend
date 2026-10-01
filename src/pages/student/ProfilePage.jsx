@@ -1,29 +1,47 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { User, Mail, Phone, MapPin, Building2, Award, HeartPulse, GraduationCap } from 'lucide-react';
+import ProfilePhotoModal from '../../components/profile/ProfilePhotoModal';
+import { User, Mail, Phone, MapPin, Building2, Award, HeartPulse, GraduationCap, Camera } from 'lucide-react';
 
 export const ProfilePage = () => {
   const { user } = useAuth();
+  const [showPhotoModal, setShowPhotoModal] = useState(false);
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-          Student Institutional Profile
-        </h1>
-        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-          Official University Registrar Identity & Biometric Record
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+            Student Institutional Profile
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+            Official University Registrar Identity & Biometric Record
+          </p>
+        </div>
+
+        <button
+          onClick={() => setShowPhotoModal(true)}
+          className="btn btn-secondary btn-sm flex items-center gap-2"
+        >
+          <Camera className="w-4 h-4 text-indigo-600" />
+          <span>Change Photo (Camera / Upload)</span>
+        </button>
       </div>
 
       <div className="campus-card">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 pb-6 border-b border-slate-100 dark:border-slate-800">
-          <img
-            src={user?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250'}
-            alt={user?.name}
-            className="w-24 h-24 rounded-2xl object-cover ring-4 ring-indigo-500/20 shadow-md"
-          />
-          <div className="space-y-1 text-center sm:text-left">
+          <div className="relative group cursor-pointer" onClick={() => setShowPhotoModal(true)}>
+            <img
+              src={user?.avatar || 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=250'}
+              alt={user?.name}
+              className="w-24 h-24 rounded-2xl object-cover ring-4 ring-indigo-500/20 shadow-md group-hover:scale-105 transition-transform"
+            />
+            <div className="absolute inset-0 rounded-2xl bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+              <Camera className="w-6 h-6" />
+            </div>
+          </div>
+
+          <div className="space-y-1 text-center sm:text-left flex-1">
             <h2 className="text-xl font-bold text-slate-900 dark:text-white">
               {user?.fullName || 'Sai Krishna Mohanty'}
             </h2>
@@ -90,6 +108,11 @@ export const ProfilePage = () => {
           </div>
         </div>
       </div>
+
+      <ProfilePhotoModal
+        isOpen={showPhotoModal}
+        onClose={() => setShowPhotoModal(false)}
+      />
     </div>
   );
 };

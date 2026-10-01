@@ -1,38 +1,87 @@
-import api, { IS_DEMO_MODE } from './api';
-import { DEMO_USERS, INITIAL_TODAYS_CLASSES, INITIAL_NOTICES, INITIAL_ASSIGNMENTS } from '../data/demoData';
+import api from './api';
 
 export const studentApi = {
-  getDashboardData: async () => {
-    if (IS_DEMO_MODE) {
-      await new Promise(r => setTimeout(r, 200));
+  /**
+   * GET /api/dashboard/student/{studentId}
+   */
+  getDashboardData: async (studentId = 1) => {
+    try {
+      const [dash, attSummary, notices, assignments, courses] = await Promise.all([
+        api.get(`/dashboard/student/${studentId}`),
+        api.get(`/attendance/summary/student/${studentId}`),
+        api.get('/notices/active'),
+        api.get('/assignments'),
+        api.get('/courses')
+      ]);
+
       return {
-        student: DEMO_USERS.student,
-        todaysClasses: INITIAL_TODAYS_CLASSES,
-        notices: INITIAL_NOTICES,
-        assignments: INITIAL_ASSIGNMENTS
+        ...dash,
+        attendance: attSummary,
+        notices: Array.isArray(notices) ? notices : [],
+        assignments: Array.isArray(assignments) ? assignments : [],
+        courses: Array.isArray(courses) ? courses : []
+      };
+    } catch (err) {
+      console.warn('[studentApi] Error loading dashboard data:', err);
+      return {
+        attendance: null,
+        notices: [],
+        assignments: [],
+        courses: []
       };
     }
-    return api.get('/student/dashboard');
   },
 
-  getProfile: async () => {
-    if (IS_DEMO_MODE) {
-      return DEMO_USERS.student;
-    }
-    return api.get('/student/profile');
+  /**
+   * GET /api/students/user/{userId}
+   */
+  getProfile: async (userId = 1) => {
+    return api.get(`/students/user/${userId}`);
   },
 
-  getDocuments: async () => {
-    if (IS_DEMO_MODE) {
-      return [
-        { id: 'doc_1', name: 'Monsoon 2026 Grade Card (Sem 4)', type: 'PDF', date: '2026-07-15', size: '1.2 MB' },
-        { id: 'doc_2', name: 'Identity Card & Library Pass', type: 'Digital Pass', date: '2024-08-01', size: '420 KB' },
-        { id: 'doc_3', name: 'Hostel Allotment Order - Room 304', type: 'PDF', date: '2024-08-10', size: '850 KB' },
-        { id: 'doc_4', name: 'Anti-Ragging Undertaking', type: 'Signed PDF', date: '2024-08-05', size: '610 KB' }
-      ];
+  /**
+   * GET /api/documents/student/{studentId}
+   */
+  getDocuments: async (studentId = 1) => {
+    try {
+      const docs = await api.get(`/documents/student/${studentId}`);
+      return Array.isArray(docs) ? docs : [];
+    } catch (err) {
+      return [];
     }
-    return api.get('/student/documents');
+  },
+
+  /**
+   * GET /api/courses
+   */
+  getCourses: async () => {
+    return api.get('/courses');
+  },
+
+  /**
+   * GET /api/assignments
+   */
+  getAssignments: async () => {
+    return api.get('/assignments');
+  },
+
+  /**
+   * POST /api/submissions
+   */
+  submitAssignment: async (payload) => {
+    return api.post('/submissions', payload);
+  },
+
+  /**
+   * GET /api/study-materials
+   */
+  getStudyMaterials: async (courseId) => {
+    if (courseId) {
+      return api.get(`/study-materials/course/${courseId}`);
+    }
+    return api.get('/study-materials');
   }
 };
 
 export default studentApi;
+

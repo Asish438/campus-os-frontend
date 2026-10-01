@@ -1,47 +1,71 @@
-import api, { IS_DEMO_MODE } from './api';
-import { INITIAL_VISITORS } from '../data/demoData';
+import api from './api';
 
 export const visitorApi = {
+  /**
+   * GET /api/visitors
+   */
   getVisitors: async () => {
-    if (IS_DEMO_MODE) {
-      return INITIAL_VISITORS;
+    try {
+      const data = await api.get('/visitors');
+      return Array.isArray(data) ? data : [];
+    } catch (err) {
+      console.warn('[visitorApi] getVisitors error:', err);
+      return [];
     }
-    return api.get('/visitors');
   },
 
+  /**
+   * GET /api/visitors/student/{studentId}
+   */
+  getStudentVisitors: async (studentId = 1) => {
+    try {
+      const data = await api.get(`/visitors/student/${studentId}`);
+      return Array.isArray(data) ? data : [];
+    } catch (err) {
+      console.warn('[visitorApi] getStudentVisitors error:', err);
+      return [];
+    }
+  },
+
+  /**
+   * POST /api/visitors
+   */
   createVisitorRequest: async (visitorData) => {
-    if (IS_DEMO_MODE) {
-      await new Promise(r => setTimeout(r, 400));
-      const newVisitor = {
-        id: `VIS-2026-${Math.floor(300 + Math.random() * 700)}`,
-        visitorName: visitorData.visitorName,
-        relationship: visitorData.relationship,
-        phone: visitorData.phone,
-        studentName: visitorData.studentName || 'Sai Krishna Mohanty',
-        studentId: visitorData.studentId || 'BPUT2026001',
-        visitDate: visitorData.visitDate,
-        expectedArrival: visitorData.expectedArrival,
-        purpose: visitorData.purpose,
-        status: 'Pending',
-        checkedInAt: null,
-        checkedOutAt: null
-      };
-      return newVisitor;
-    }
-    return api.post('/visitors', visitorData);
+    const payload = {
+      studentId: visitorData.studentId || 1,
+      visitorName: visitorData.visitorName || visitorData.name,
+      relationship: visitorData.relationship,
+      phone: visitorData.phone,
+      idProofType: visitorData.idProofType || 'Aadhaar Card',
+      idProofNumber: visitorData.idProofNumber || 'XXXX-XXXX-1234',
+      expectedArrival: visitorData.expectedArrival || new Date().toISOString(),
+      visitDate: visitorData.visitDate || new Date().toISOString(),
+      status: 'PENDING'
+    };
+    return api.post('/visitors', payload);
   },
 
-  updateVisitorStatus: async (visitorId, status) => {
-    if (IS_DEMO_MODE) {
-      await new Promise(r => setTimeout(r, 300));
-      return {
-        visitorId,
-        status,
-        timestamp: new Date().toLocaleString()
-      };
-    }
-    return api.patch(`/visitors/${visitorId}/status`, { status });
+  /**
+   * PUT /api/visitors/{id}/approve/{approvedByUserId}
+   */
+  approveVisitor: async (visitorId, approvedByUserId = 3) => {
+    return api.put(`/visitors/${visitorId}/approve/${approvedByUserId}`);
+  },
+
+  /**
+   * PUT /api/security/visitor/{id}/check-in
+   */
+  checkInVisitor: async (visitorId) => {
+    return api.put(`/security/visitor/${visitorId}/check-in`);
+  },
+
+  /**
+   * PUT /api/security/visitor/{id}/check-out
+   */
+  checkOutVisitor: async (visitorId) => {
+    return api.put(`/security/visitor/${visitorId}/check-out`);
   }
 };
 
 export default visitorApi;
+

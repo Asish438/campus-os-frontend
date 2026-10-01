@@ -14,7 +14,11 @@ import {
   CheckCircle2,
   Upload,
   Info,
-  ChevronRight
+  ChevronRight,
+  FileText,
+  X,
+  Paperclip,
+  Image as ImageIcon
 } from 'lucide-react';
 
 export const ComplaintsPage = () => {
@@ -29,6 +33,10 @@ export const ComplaintsPage = () => {
   const [room, setRoom] = useState(user?.room || 'Room 304');
   const [priority, setPriority] = useState('High');
 
+  // Attachment State
+  const [attachedFile, setAttachedFile] = useState(null);
+  const fileInputRef = React.useRef(null);
+
   // AI Classification state
   const [aiAnalyzing, setAiAnalyzing] = useState(false);
   const [aiResult, setAiResult] = useState(null);
@@ -36,6 +44,32 @@ export const ComplaintsPage = () => {
 
   // Selected complaint for timeline modal
   const [selectedComplaint, setSelectedComplaint] = useState(null);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const sizeStr = file.size > 1024 * 1024
+        ? (file.size / (1024 * 1024)).toFixed(1) + ' MB'
+        : (file.size / 1024).toFixed(0) + ' KB';
+      
+      setAttachedFile({
+        file,
+        name: file.name,
+        size: sizeStr,
+        type: file.type || 'application/pdf',
+        isPdf: file.name.toLowerCase().endsWith('.pdf') || file.type.includes('pdf'),
+        isImage: file.type.startsWith('image/')
+      });
+    }
+  };
+
+  const handleRemoveFile = (e) => {
+    e.stopPropagation();
+    setAttachedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   // Auto-run AI classification on blur or button click
   const handleAiClassify = async () => {
@@ -84,11 +118,16 @@ export const ComplaintsPage = () => {
         category: cat,
         priority: pri,
         department: dept,
+        photoPath: attachedFile?.name || null,
         assignedTo: aiResult?.recommendedAssignee || 'Maintenance Duty Team'
       });
 
-      // Clear description
+      // Clear description and file attachment
       setDescription('');
+      setAttachedFile(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     } finally {
       setSubmitting(false);
     }
@@ -243,13 +282,70 @@ export const ComplaintsPage = () => {
               </div>
             </div>
 
-            {/* Photo upload simulator */}
+            {/* Real File / Photo / PDF Attachment */}
             <div>
-              <label className="form-label">Photo Attachment (Optional)</label>
-              <div className="border border-dashed border-slate-200 dark:border-slate-800 rounded-xl p-3 text-center text-slate-400 hover:border-indigo-400 cursor-pointer transition-colors flex items-center justify-center gap-2">
-                <Upload className="w-4 h-4 text-indigo-500" />
-                <span>Click to attach photo or drag file</span>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="form-label mb-0">Attachment (Photo / PDF Document)</label>
+                {attachedFile && (
+                  <button
+                    type="button"
+                    onClick={handleRemoveFile}
+                    className="text-[11px] font-semibold text-rose-500 hover:underline flex items-center gap-0.5"
+                  >
+                    <X className="w-3 h-3" /> Remove
+                  </button>
+                )}
               </div>
+
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                accept="image/*,.pdf,.doc,.docx"
+                className="hidden"
+              />
+
+              {!attachedFile ? (
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  className="border border-dashed border-slate-300 dark:border-slate-700 hover:border-indigo-500 dark:hover:border-indigo-400 rounded-xl p-3.5 text-center text-slate-500 dark:text-slate-400 hover:bg-slate-50/60 dark:hover:bg-slate-800/40 cursor-pointer transition-all flex flex-col items-center justify-center gap-1.5"
+                >
+                  <div className="w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                    <Upload className="w-4 h-4" />
+                  </div>
+                  <div className="text-xs">
+                    <span className="font-bold text-indigo-600 dark:text-indigo-400">Click to upload</span> or drag and drop
+                  </div>
+                  <p className="text-[10px] text-slate-400">PDF, PNG, JPG, or DOC up to 10MB</p>
+                </div>
+              ) : (
+                <div className="p-3 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-900/60 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+                      {attachedFile.isPdf ? (
+                        <FileText className="w-4 h-4 text-rose-200" />
+                      ) : (
+                        <ImageIcon className="w-4 h-4 text-cyan-200" />
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
+                        {attachedFile.name}
+                      </p>
+                      <p className="text-[10px] text-slate-500 font-mono">
+                        {attachedFile.size} • {attachedFile.isPdf ? 'PDF Document' : 'Image Attachment'}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRemoveFile}
+                    className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
             </div>
 
             <button
@@ -296,6 +392,12 @@ export const ComplaintsPage = () => {
                       <span className="text-[10px] font-bold text-rose-600 uppercase">
                         {c.priority} Priority
                       </span>
+                      {c.photoPath && (
+                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-900 flex items-center gap-1">
+                          <Paperclip className="w-2.5 h-2.5" />
+                          File
+                        </span>
+                      )}
                     </div>
                     <p className="text-xs font-semibold text-slate-900 dark:text-slate-100">
                       {c.description}
@@ -345,6 +447,18 @@ export const ComplaintsPage = () => {
                   "{selectedComplaint.description}"
                 </p>
               </div>
+
+              {selectedComplaint.photoPath && (
+                <div className="p-2.5 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-900/60 flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300 font-semibold text-xs">
+                    <Paperclip className="w-4 h-4 text-indigo-500" />
+                    <span>Attached Document: <strong>{selectedComplaint.photoPath}</strong></span>
+                  </div>
+                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300">
+                    Uploaded File
+                  </span>
+                </div>
+              )}
             </div>
 
             <div>

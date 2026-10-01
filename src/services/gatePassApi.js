@@ -1,81 +1,81 @@
-import api, { IS_DEMO_MODE } from './api';
-import { INITIAL_GATE_PASSES } from '../data/demoData';
+import api from './api';
 
 export const gatePassApi = {
-  getMyGatePasses: async () => {
-    if (IS_DEMO_MODE) {
-      return INITIAL_GATE_PASSES;
+  /**
+   * GET /api/gate-passes/student/{studentId}
+   */
+  getMyGatePasses: async (studentId = 1) => {
+    try {
+      const data = await api.get(`/gate-passes/student/${studentId}`);
+      return Array.isArray(data) ? data : [];
+    } catch (err) {
+      console.warn('[gatePassApi] getMyGatePasses error:', err);
+      return [];
     }
-    return api.get('/gate-pass/my');
   },
 
+  /**
+   * GET /api/gate-passes
+   */
   getAllGatePasses: async () => {
-    if (IS_DEMO_MODE) {
-      return INITIAL_GATE_PASSES;
+    try {
+      const data = await api.get('/gate-passes');
+      return Array.isArray(data) ? data : [];
+    } catch (err) {
+      console.warn('[gatePassApi] getAllGatePasses error:', err);
+      return [];
     }
-    return api.get('/gate-pass/all');
   },
 
+  /**
+   * POST /api/gate-passes
+   */
   createGatePass: async (passData) => {
-    if (IS_DEMO_MODE) {
-      await new Promise(r => setTimeout(r, 400));
-      const id = `GP-2026-${Math.floor(8000 + Math.random() * 1000)}`;
-      const newPass = {
-        id,
-        student: passData.student || 'Sai Krishna Mohanty',
-        studentId: passData.studentId || 'BPUT2026001',
-        hostel: passData.hostel || 'Aryabhatta Hall',
-        room: passData.room || 'Room 304',
-        phone: passData.phone || '+91 98765 43210',
-        purpose: passData.purpose,
-        destination: passData.destination,
-        date: passData.date || new Date().toISOString().split('T')[0],
-        outTime: passData.outTime,
-        returnTime: passData.returnTime,
-        status: 'Pending',
-        approvedBy: null,
-        approvedAt: null,
-        qrPayload: null
-      };
-      return newPass;
-    }
-    return api.post('/gate-pass', passData);
+    const payload = {
+      studentId: passData.studentId || 1,
+      reason: passData.purpose || passData.reason,
+      departureTime: passData.outTime || passData.departureTime || new Date().toISOString(),
+      expectedReturnTime: passData.returnTime || passData.expectedReturnTime || new Date(Date.now() + 86400000).toISOString(),
+      status: 'PENDING'
+    };
+    return api.post('/gate-passes', payload);
   },
 
-  approveGatePass: async (passId, wardenName = 'Col. Rajesh Sharma (Warden)') => {
-    if (IS_DEMO_MODE) {
-      await new Promise(r => setTimeout(r, 300));
-      return {
-        passId,
-        status: 'Approved',
-        approvedBy: wardenName,
-        approvedAt: new Date().toLocaleString()
-      };
-    }
-    return api.patch(`/gate-pass/${passId}/approve`);
+  /**
+   * PUT /api/gate-passes/{id}/approve
+   */
+  approveGatePass: async (passId, approvedByUserId = 3) => {
+    return api.put(`/gate-passes/${passId}/approve`, { approvedByUserId });
   },
 
-  rejectGatePass: async (passId, reason = 'Administrative grounds') => {
-    if (IS_DEMO_MODE) {
-      await new Promise(r => setTimeout(r, 300));
-      return { passId, status: 'Rejected', rejectionReason: reason };
-    }
-    return api.patch(`/gate-pass/${passId}/reject`, { reason });
+  /**
+   * PUT /api/gate-passes/{id}/reject
+   */
+  rejectGatePass: async (passId) => {
+    return api.put(`/gate-passes/${passId}/reject`);
   },
 
-  verifyGatePass: async (passId, actionType = 'ENTRY', gate = 'Main Security Gate 1') => {
-    if (IS_DEMO_MODE) {
-      await new Promise(r => setTimeout(r, 300));
-      return {
-        passId,
-        verified: true,
-        actionType,
-        gate,
-        timestamp: new Date().toLocaleString()
-      };
-    }
-    return api.post(`/gate-pass/${passId}/verify`, { actionType, gate });
+  /**
+   * GET /api/security/gate-pass/verify/{qrCode}
+   */
+  verifyGatePass: async (qrCode) => {
+    return api.get(`/security/gate-pass/verify/${qrCode}`);
+  },
+
+  /**
+   * PUT /api/security/gate-pass/{id}/exit
+   */
+  markExit: async (passId) => {
+    return api.put(`/security/gate-pass/${passId}/exit`);
+  },
+
+  /**
+   * PUT /api/security/gate-pass/{id}/return
+   */
+  markReturn: async (passId) => {
+    return api.put(`/security/gate-pass/${passId}/return`);
   }
 };
 
 export default gatePassApi;
+

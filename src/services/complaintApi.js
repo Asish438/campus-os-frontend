@@ -1,55 +1,57 @@
-import api, { IS_DEMO_MODE } from './api';
-import { INITIAL_COMPLAINTS } from '../data/demoData';
+import api from './api';
 
 export const complaintApi = {
-  getMyComplaints: async () => {
-    if (IS_DEMO_MODE) {
-      return INITIAL_COMPLAINTS;
+  /**
+   * GET /api/complaints/student/{studentId}
+   */
+  getMyComplaints: async (studentId = 1) => {
+    try {
+      const data = await api.get(`/complaints/student/${studentId}`);
+      return Array.isArray(data) ? data : [];
+    } catch (err) {
+      console.warn('[complaintApi] getMyComplaints error:', err);
+      return [];
     }
-    return api.get('/complaints/my');
   },
 
+  /**
+   * GET /api/complaints
+   */
   getAllComplaints: async () => {
-    if (IS_DEMO_MODE) {
-      return INITIAL_COMPLAINTS;
+    try {
+      const data = await api.get('/complaints');
+      return Array.isArray(data) ? data : [];
+    } catch (err) {
+      console.warn('[complaintApi] getAllComplaints error:', err);
+      return [];
     }
-    return api.get('/complaints/all');
   },
 
+  /**
+   * POST /api/complaints
+   */
   createComplaint: async (complaintData) => {
-    if (IS_DEMO_MODE) {
-      await new Promise(r => setTimeout(r, 400));
-      const newComplaint = {
-        id: `CMP-2026-${Math.floor(100 + Math.random() * 900)}`,
-        student: complaintData.student || 'Sai Krishna Mohanty',
-        studentId: complaintData.studentId || 'BPUT2026001',
-        hostel: complaintData.hostel || 'Aryabhatta Hall of Residence',
-        block: complaintData.block || 'Block-B',
-        room: complaintData.room || 'Room 304',
-        description: complaintData.description,
-        category: complaintData.category || 'General Maintenance',
-        priority: complaintData.priority || 'Medium',
-        department: complaintData.department || 'Maintenance',
-        status: 'SUBMITTED',
-        assignedTo: complaintData.assignedTo || 'Unassigned (AI Queued)',
-        createdAt: new Date().toLocaleString(),
-        updatedAt: new Date().toLocaleString(),
-        timeline: [
-          { time: new Date().toLocaleString(), event: `Complaint logged with AI auto-classification (${complaintData.category} / ${complaintData.priority})` }
-        ]
-      };
-      return newComplaint;
-    }
     return api.post('/complaints', complaintData);
   },
 
-  updateStatus: async (complaintId, newStatus, assignedTo) => {
-    if (IS_DEMO_MODE) {
-      await new Promise(r => setTimeout(r, 300));
-      return { complaintId, newStatus, assignedTo, updatedAt: new Date().toLocaleString() };
-    }
-    return api.patch(`/complaints/${complaintId}/status`, { status: newStatus, assignedTo });
+  /**
+   * POST /api/complaints/classify
+   * Real AI keyword / LLM auto-classification
+   */
+  classifyComplaint: async (description) => {
+    return api.post('/complaints/classify', { description });
+  },
+
+  /**
+   * PUT /api/complaints/{id}/status
+   */
+  updateStatus: async (complaintId, newStatus, assignedToUserId) => {
+    return api.put(`/complaints/${complaintId}/status`, {
+      status: newStatus,
+      assignedToUserId
+    });
   }
 };
 
 export default complaintApi;
+

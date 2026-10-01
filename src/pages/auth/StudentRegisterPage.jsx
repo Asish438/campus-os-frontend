@@ -9,12 +9,9 @@ import {
   Lock,
   Phone,
   GraduationCap,
-  Building2,
   Sparkles,
   ArrowRight,
-  CheckCircle2,
   AlertCircle,
-  ShieldCheck,
   ChevronLeft
 } from 'lucide-react';
 
@@ -84,13 +81,9 @@ export const StudentRegisterPage = () => {
     setLoading(true);
 
     try {
-      const newUser = await registerStudent(formData);
-      addToast({
-        title: 'Registration Successful! 🎉',
-        message: `Welcome to Campus OS, ${newUser.fullName}. Authenticated via Axios POST http://localhost:8080/api/auth/register`,
-        type: 'success'
-      });
-      navigate('/student/dashboard');
+      const response = await registerStudent(formData);
+      addToast({ title: 'Registration Successful', message: response.message, type: 'success' });
+      navigate('/login');
     } catch (err) {
       setError(err.message || 'Registration failed. Please verify backend service.');
     } finally {
@@ -125,7 +118,7 @@ export const StudentRegisterPage = () => {
         {/* Live Axios Endpoint Connection Indicator */}
         <div className="inline-flex items-center gap-2 mt-3 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900 text-[11px] font-mono font-semibold">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span>Axios Endpoint: <strong>POST http://localhost:8080/api/auth/register</strong></span>
+          <span>Axios Endpoint: <strong>POST http://localhost:8070/api/auth/register</strong></span>
         </div>
       </div>
 
@@ -232,101 +225,7 @@ export const StudentRegisterPage = () => {
               </div>
             </div>
 
-            {/* Row 3: Program & Department */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                  Academic Degree Program
-                </label>
-                <select
-                  name="program"
-                  value={formData.program}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2.5 text-xs bg-slate-950/60 border border-slate-700/80 rounded-xl text-white outline-none focus:border-indigo-500"
-                >
-                  <option value="B.Tech">B.Tech (Bachelor of Technology)</option>
-                  <option value="M.Tech">M.Tech (Master of Technology)</option>
-                  <option value="MCA">MCA (Master of Computer Applications)</option>
-                  <option value="MBA">MBA (Management Studies)</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                  Department / Branch
-                </label>
-                <select
-                  name="department"
-                  value={formData.department}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2.5 text-xs bg-slate-950/60 border border-slate-700/80 rounded-xl text-white outline-none focus:border-indigo-500"
-                >
-                  <option value="Computer Science & Engineering">Computer Science & Engineering (CSE)</option>
-                  <option value="Electronics & Communication">Electronics & Communication (ECE)</option>
-                  <option value="Mechanical Engineering">Mechanical Engineering (MECH)</option>
-                  <option value="Civil Engineering">Civil Engineering (CIVIL)</option>
-                  <option value="Management Studies">Management Studies (MBA)</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Row 4: Year & Hostel */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                  Year of Study
-                </label>
-                <select
-                  name="year"
-                  value={formData.year}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2.5 text-xs bg-slate-950/60 border border-slate-700/80 rounded-xl text-white outline-none focus:border-indigo-500"
-                >
-                  <option value="1st Year">1st Year</option>
-                  <option value="2nd Year">2nd Year</option>
-                  <option value="3rd Year">3rd Year</option>
-                  <option value="4th Year">4th Year</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                  Semester
-                </label>
-                <select
-                  name="semester"
-                  value={formData.semester}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2.5 text-xs bg-slate-950/60 border border-slate-700/80 rounded-xl text-white outline-none focus:border-indigo-500"
-                >
-                  <option value="Semester 1">Semester 1</option>
-                  <option value="Semester 2">Semester 2</option>
-                  <option value="Semester 3">Semester 3</option>
-                  <option value="Semester 4">Semester 4</option>
-                  <option value="Semester 5">Semester 5</option>
-                  <option value="Semester 6">Semester 6</option>
-                  <option value="Semester 7">Semester 7</option>
-                  <option value="Semester 8">Semester 8</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                  Accommodation
-                </label>
-                <select
-                  name="accommodation"
-                  value={formData.accommodation}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2.5 text-xs bg-slate-950/60 border border-slate-700/80 rounded-xl text-white outline-none focus:border-indigo-500"
-                >
-                  <option value="Hosteller">Hosteller (Aryabhatta / Ramanujan)</option>
-                  <option value="Day Scholar">Day Scholar (Commuter)</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Row 5: Password & Confirm Password */}
+            {/* Row 3: Password & Confirm Password */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-300 mb-1.5">
@@ -371,7 +270,7 @@ export const StudentRegisterPage = () => {
                 disabled={loading}
                 className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-cyan-500 hover:from-indigo-500 hover:to-cyan-400 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 transition-all hover:scale-[1.01] disabled:opacity-50"
               >
-                {loading ? 'Registering Account...' : 'Complete Student Registration & Launch Dashboard'}
+                {loading ? 'Registering...' : 'Register'}
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>

@@ -1,54 +1,36 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { authApi } from '../../services/authApi';
 import {
   School,
-  Phone,
-  KeyRound,
   ArrowRight,
-  RotateCcw,
   CheckCircle2,
   AlertCircle
 } from 'lucide-react';
 
 export const OtpVerificationPage = () => {
   const navigate = useNavigate();
-  const { loginWithOtp } = useAuth();
+  const location = useLocation();
+  const { loginWithOtp, verifyRegisterOtp } = useAuth();
+  
+  // If coming from login/register, email and flow type might be passed in state
+  const passedEmail = location.state?.email || '';
+  const flowType = location.state?.flow || 'LOGIN'; // 'LOGIN' or 'REGISTER'
 
-  const [step, setStep] = useState('REQUEST'); // 'REQUEST' | 'VERIFY'
-  const [identifier, setIdentifier] = useState('+91 98765 43210');
-  const [selectedRole, setSelectedRole] = useState('STUDENT');
-  const [otp, setOtp] = useState(['1', '2', '3', '4', '5', '6']);
-  const [countdown, setCountdown] = useState(45);
+  const [email] = useState(passedEmail);
+  const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [countdown, setCountdown] = useState(300); // 5 minutes
   const [loading, setLoading] = useState(false);
-  const [infoMessage, setInfoMessage] = useState('');
+  const [infoMessage] = useState(passedEmail ? 'OTP sent to your email' : '');
   const [error, setError] = useState('');
 
   useEffect(() => {
     let timer;
-    if (step === 'VERIFY' && countdown > 0) {
+    if (countdown > 0) {
       timer = setInterval(() => setCountdown(c => c - 1), 1000);
     }
     return () => clearInterval(timer);
-  }, [step, countdown]);
-
-  const handleSendOtp = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    try {
-      const res = await authApi.sendOtp(identifier);
-      setInfoMessage(res.message || 'OTP sent successfully!');
-      setStep('VERIFY');
-      setCountdown(45);
-    } catch (err) {
-      setError(err.message || 'Failed to send OTP.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [countdown]);
 
   const handleOtpChange = (index, value) => {
     if (value.length > 1) value = value.slice(-1);
@@ -71,18 +53,28 @@ export const OtpVerificationPage = () => {
       return;
     }
 
+    if (!email) {
+      setError('Missing email address. Please restart the process.');
+      return;
+    }
+
     setError('');
     setLoading(true);
 
     try {
-      const loggedUser = await loginWithOtp(identifier, fullOtp, selectedRole);
-      // Redirect
-      if (loggedUser.role === 'STUDENT') navigate('/student/dashboard');
-      else if (loggedUser.role === 'FACULTY') navigate('/faculty/dashboard');
-      else if (loggedUser.role === 'WARDEN') navigate('/warden/dashboard');
-      else if (loggedUser.role === 'SECURITY') navigate('/security/dashboard');
-      else if (loggedUser.role === 'ADMIN') navigate('/admin/dashboard');
-      else navigate('/');
+      if (flowType === 'REGISTER') {
+          await verifyRegisterOtp(email, fullOtp);
+          navigate('/login'); // Force login after register
+      } else {
+          const loggedUser = await loginWithOtp(email, fullOtp);
+          // Redirect based on role
+          if (loggedUser.role === 'STUDENT') navigate('/student/dashboard');
+          else if (loggedUser.role === 'FACULTY') navigate('/faculty/dashboard');
+          else if (loggedUser.role === 'WARDEN') navigate('/warden/dashboard');
+          else if (loggedUser.role === 'SECURITY') navigate('/security/dashboard');
+          else if (loggedUser.role === 'ADMIN') navigate('/admin/dashboard');
+          else navigate('/');
+      }
     } catch (err) {
       setError(err.message || 'Invalid OTP code.');
     } finally {
@@ -99,16 +91,14 @@ export const OtpVerificationPage = () => {
           </div>
           <div className="text-left">
             <span className="text-xl font-extrabold tracking-tight text-white">CAMPUS OS</span>
-            <p className="text-[10px] text-slate-400 font-medium">OTP Authentication Portal</p>
+            <p className="text-[10px] text-slate-400 font-medium">Secure Email OTP Portal</p>
           </div>
         </Link>
         <h2 className="text-2xl font-bold tracking-tight text-white">
-          {step === 'REQUEST' ? 'Phone / Identity Verification' : 'Enter One-Time Password'}
+          Verify Two-Factor Authentication
         </h2>
         <p className="mt-1 text-xs text-slate-400">
-          {step === 'REQUEST'
-            ? 'We will transmit a 6-digit authentication token to your registered mobile'
-            : `Enter code sent to ${identifier} (Demo OTP: 123456)`}
+           We sent a secure 6-digit code to {email || 'your email'}
         </p>
       </div>
 
@@ -128,118 +118,54 @@ export const OtpVerificationPage = () => {
             </div>
           )}
 
-          {step === 'REQUEST' ? (
-            <form onSubmit={handleSendOtp} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                  Target Role
-                </label>
-                <select
-                  value={selectedRole}
-                  onChange={(e) => setSelectedRole(e.target.value)}
-                  className="w-full px-3 py-2 text-xs bg-slate-950/60 border border-slate-700/80 rounded-xl text-white outline-none"
-                >
-                  <option value="STUDENT">Student (Sai - BPUT2026001)</option>
-                  <option value="FACULTY">Faculty (Dr. Thorne)</option>
-                  <option value="WARDEN">Warden (Col. Sharma)</option>
-                  <option value="SECURITY">Security (Insp. Pradhan)</option>
-                  <option value="ADMIN">Admin (Dean Patnaik)</option>
-                  <option value="ACCOUNTS">Accounts (Priyanka Das)</option>
-                  <option value="TRANSPORT">Transport (Ramesh Mohapatra)</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                  Mobile Number or Institutional Email
-                </label>
-                <div className="relative">
-                  <Phone className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <form onSubmit={handleVerifyOtp} className="space-y-6">
+            {/* 6-digit OTP Inputs */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 text-center mb-3">
+                Verification Code
+              </label>
+              <div className="flex justify-between gap-2">
+                {otp.map((digit, idx) => (
                   <input
+                    key={idx}
+                    id={`otp-input-${idx}`}
                     type="text"
-                    required
-                    value={identifier}
-                    onChange={(e) => setIdentifier(e.target.value)}
-                    placeholder="+91 98765 43210"
-                    className="w-full pl-10 pr-4 py-2.5 text-xs bg-slate-950/60 border border-slate-700/80 rounded-xl text-white placeholder:text-slate-500 outline-none focus:border-indigo-500 transition-all"
+                    maxLength={1}
+                    value={digit}
+                    onChange={(e) => handleOtpChange(idx, e.target.value)}
+                    className="w-11 h-12 text-center text-lg font-bold font-mono bg-slate-950/80 border border-slate-700 rounded-xl text-indigo-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
                   />
-                </div>
+                ))}
               </div>
+            </div>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 transition-all disabled:opacity-50"
-              >
-                {loading ? 'Dispatching OTP...' : 'Send 6-Digit OTP'}
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </form>
-          ) : (
-            <form onSubmit={handleVerifyOtp} className="space-y-6">
-              {/* 6-digit OTP Inputs */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 text-center mb-3">
-                  Verification Code
-                </label>
-                <div className="flex justify-between gap-2">
-                  {otp.map((digit, idx) => (
-                    <input
-                      key={idx}
-                      id={`otp-input-${idx}`}
-                      type="text"
-                      maxLength={1}
-                      value={digit}
-                      onChange={(e) => handleOtpChange(idx, e.target.value)}
-                      className="w-11 h-12 text-center text-lg font-bold font-mono bg-slate-950/80 border border-slate-700 rounded-xl text-indigo-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
-                    />
-                  ))}
-                </div>
-              </div>
+            {/* Countdown & Resend */}
+            <div className="flex items-center justify-between text-xs text-slate-400">
+              <span>
+                {countdown > 0 ? (
+                  `Code expires in ${Math.floor(countdown/60)}:${(countdown%60).toString().padStart(2, '0')}`
+                ) : (
+                  <span className="text-rose-400">Code expired</span>
+                )}
+              </span>
+            </div>
 
-              {/* Countdown & Resend */}
-              <div className="flex items-center justify-between text-xs text-slate-400">
-                <span>
-                  {countdown > 0 ? (
-                    `Resend in ${countdown}s`
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => setCountdown(45)}
-                      className="text-indigo-400 hover:underline flex items-center gap-1 font-semibold"
-                    >
-                      <RotateCcw className="w-3 h-3" /> Resend OTP
-                    </button>
-                  )}
-                </span>
-                <span className="font-mono text-cyan-400 font-semibold">Demo: 123456</span>
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 transition-all disabled:opacity-50"
-              >
-                {loading ? 'Verifying Token...' : 'Verify OTP & Enter Campus OS'}
-                <ArrowRight className="w-4 h-4" />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setStep('REQUEST')}
-                className="w-full text-center text-xs text-slate-400 hover:text-white transition-colors"
-              >
-                Change Mobile Number
-              </button>
-            </form>
-          )}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+            >
+              {loading ? 'Verifying Token...' : 'Verify OTP & Enter Campus OS'}
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </form>
 
           <div className="mt-6 pt-6 border-t border-slate-800 text-center">
             <Link
               to="/login"
               className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
             >
-              ← Back to standard Password Login
+              ← Back to standard Login
             </Link>
           </div>
         </div>

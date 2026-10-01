@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { DEMO_USERS } from '../data/demoData';
 import { authApi } from '../services/authApi';
 
 const AuthContext = createContext(null);
@@ -7,16 +6,28 @@ const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     const saved = localStorage.getItem('campus_os_user');
-    return saved ? JSON.parse(saved) : DEMO_USERS.student;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (!parsed.avatar) {
+          parsed.avatar = 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=250';
+          localStorage.setItem('campus_os_user', JSON.stringify(parsed));
+        }
+        return parsed;
+      } catch (e) {
+        return null;
+      }
+    }
+    return null; 
   });
 
   const [token, setToken] = useState(() => {
-    return localStorage.getItem('campus_os_token') || 'demo_jwt_token_student_active';
+    return localStorage.getItem('campus_os_token') || null;
   });
 
   const [role, setRole] = useState(() => {
     const saved = localStorage.getItem('campus_os_user');
-    return saved ? JSON.parse(saved).role : 'STUDENT';
+    return saved ? JSON.parse(saved).role : null;
   });
 
   const isAuthenticated = Boolean(user && token);
@@ -41,32 +52,25 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     const response = await authApi.login(email, password);
-    setUser(response.user);
+    const userObj = response.user;
+    if (userObj && !userObj.avatar) {
+      userObj.avatar = 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=250';
+    }
+    setUser(userObj);
     setToken(response.token);
-    return response.user;
-  };
-
-  const loginWithOtp = async (identifier, otp, selectedRole = 'STUDENT') => {
-    const response = await authApi.verifyOtp(identifier, otp, selectedRole);
-    setUser(response.user);
-    setToken(response.token);
-    return response.user;
+    return userObj;
   };
 
   const registerStudent = async (studentData) => {
-    const response = await authApi.register(studentData);
-    setUser(response.user);
-    setRole('STUDENT');
-    setToken(response.token);
-    return response.user;
+    return await authApi.register(studentData);
   };
 
-  const switchRole = (newRole) => {
-    const roleKey = newRole.toLowerCase();
-    const targetUser = DEMO_USERS[roleKey] || DEMO_USERS.student;
-    setUser(targetUser);
-    setRole(targetUser.role);
-    setToken(`demo_jwt_token_${targetUser.role.toLowerCase()}_switched`);
+  const updateUserProfile = (updatedFields) => {
+    setUser(prev => {
+      const updated = { ...(prev || {}), ...updatedFields };
+      localStorage.setItem('campus_os_user', JSON.stringify(updated));
+      return updated;
+    });
   };
 
   const logout = () => {
@@ -85,9 +89,8 @@ export const AuthProvider = ({ children }) => {
         token,
         isAuthenticated,
         login,
-        loginWithOtp,
         registerStudent,
-        switchRole,
+        updateUserProfile,
         logout
       }}
     >

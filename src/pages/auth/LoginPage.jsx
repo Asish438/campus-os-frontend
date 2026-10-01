@@ -65,8 +65,8 @@ export const LoginPage = () => {
     setLoading(true);
 
     try {
-      const loggedUser = await login(email, password);
-      redirectUser(loggedUser.role);
+      const response = await login(email, password);
+      redirectUser(response.role);
     } catch (err) {
       setError(err.message || 'Authentication failed. Please verify credentials.');
     } finally {
@@ -74,17 +74,7 @@ export const LoginPage = () => {
     }
   };
 
-  const handleQuickDemoLogin = (roleKey) => {
-    const targetUser = DEMO_USERS[roleKey];
-    if (targetUser) {
-      setEmail(targetUser.email);
-      setPassword(targetUser.password);
-      switchRole(targetUser.role);
-      redirectUser(targetUser.role);
-    }
-  };
-
-  const redirectUser = (role) => {
+    const redirectUser = (role) => {
     switch (role) {
       case 'STUDENT':
         navigate('/student/dashboard');
@@ -148,7 +138,7 @@ export const LoginPage = () => {
         {/* Live Axios Endpoint Connection Indicator */}
         <div className="inline-flex items-center gap-2 mt-3 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900 text-[11px] font-mono font-semibold">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span>Axios Endpoint: <strong>POST http://localhost:8080/api/auth/login</strong></span>
+          <span>Axios Endpoint: <strong>POST http://localhost:8070/api/auth/login</strong></span>
         </div>
       </div>
 
@@ -206,15 +196,7 @@ export const LoginPage = () => {
                 </span>
               </div>
 
-              {/* 1-Click Fast Student Demo Login */}
-              <button
-                type="button"
-                onClick={() => handleQuickDemoLogin('student')}
-                className="w-full py-2.5 px-3 rounded-xl bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/60 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 font-bold text-xs flex items-center justify-center gap-2 transition-all group"
-              >
-                <Sparkles className="w-4 h-4 text-blue-600 group-hover:scale-110 transition-transform" />
-                <span>⚡ Instant Login as Sai (B.Tech CSE - BPUT2026001)</span>
-              </button>
+              
 
               <form onSubmit={handleLogin} className="space-y-4 pt-1">
                 <div>
@@ -239,12 +221,6 @@ export const LoginPage = () => {
                     <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
                       Password
                     </label>
-                    <Link
-                      to="/otp-verification"
-                      className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline transition-colors"
-                    >
-                      Login via Mobile OTP?
-                    </Link>
                   </div>
                   <div className="relative">
                     <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -329,17 +305,7 @@ export const LoginPage = () => {
                 </div>
               </div>
 
-              {/* Instant 1-Click Staff Login */}
-              <button
-                type="button"
-                onClick={() => handleQuickDemoLogin(selectedStaffRole)}
-                className="w-full py-2.5 px-3 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/40 text-purple-300 font-bold text-xs flex items-center justify-center gap-2 transition-all"
-              >
-                <Sparkles className="w-4 h-4 text-pink-400" />
-                <span>
-                  ⚡ Launch as {staffRoles.find(s => s.key === selectedStaffRole)?.label} ({staffRoles.find(s => s.key === selectedStaffRole)?.user})
-                </span>
-              </button>
+              
 
               <form onSubmit={handleLogin} className="space-y-4 pt-1">
                 <div>
@@ -388,14 +354,10 @@ export const LoginPage = () => {
             </div>
           )}
 
-          {/* Quick Phone OTP Login footer */}
           <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 text-center">
-            <Link
-              to="/otp-verification"
-              className="text-xs text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-white transition-colors"
-            >
-              Sign In with Phone OTP (Demo OTP: <strong className="text-blue-600 dark:text-cyan-400 font-mono">123456</strong>)
-            </Link>
+            <span className="text-xs text-slate-500 dark:text-slate-400">
+              Having trouble logging in? Contact IT Support.
+            </span>
           </div>
         </div>
       </div>
